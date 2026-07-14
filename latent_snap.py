@@ -1,7 +1,7 @@
 import torch
 import torch.nn.functional as F
 
-class LatentResolutionSnap:
+class LatentSnap:
     def __init__(self):
         pass
 
@@ -32,13 +32,11 @@ class LatentResolutionSnap:
     def run(self, divisor, batch_size, latent=None, image=None, width=512, height=512):
         m = int(divisor)
 
-        # Приоритет источника разрешения: latent > image > ручной ввод
         if latent is not None:
             samples = latent["samples"]
             src_h = samples.shape[2] * 8
             src_w = samples.shape[3] * 8
         elif image is not None:
-            # IMAGE в ComfyUI имеет форму [batch, H, W, C]
             src_h = image.shape[1]
             src_w = image.shape[2]
         else:
@@ -48,23 +46,18 @@ class LatentResolutionSnap:
         new_w = self.round_to_multiple(src_w, m)
         new_h = self.round_to_multiple(src_h, m)
 
-        # Пустой латент нужного размера
         latent_h = new_h // 8
         latent_w = new_w // 8
         empty_latent = torch.zeros([batch_size, 4, latent_h, latent_w])
 
-        # Если на вход дали картинку — подгоняем и её под новый размер
-        out_image = None
         if image is not None:
-            # image: [B, H, W, C] -> для interpolate нужно [B, C, H, W]
             img = image.permute(0, 3, 1, 2)
             img = F.interpolate(img, size=(new_h, new_w), mode="bilinear", align_corners=False)
             out_image = img.permute(0, 2, 3, 1)
         else:
-            # Если картинки не было — отдаём пустую заглушку нужного размера
             out_image = torch.zeros([batch_size, new_h, new_w, 3])
 
-        print(f"[LatentResolutionSnap] {src_w}x{src_h} -> {new_w}x{new_h} (кратно {m})")
+        print(f"[LatentSnap] {src_w}x{src_h} -> {new_w}x{new_h} (кратно {m})")
 
         return ({"samples": empty_latent}, out_image, new_w, new_h)
 
