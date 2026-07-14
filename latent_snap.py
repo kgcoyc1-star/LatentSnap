@@ -70,9 +70,9 @@ class LatentResolutionSnap:
 
 
 NODE_CLASS_MAPPINGS = {
-    "LatentResolutionSnap": LatentResolutionSnap
+    "LatentSnap": LatentSnap
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "LatentResolutionSnap": "Resolution Snap (÷16/32/64)"
+    "LatentSnap": "Latent Snap (÷16/32/64)"
 }
